@@ -1,0 +1,464 @@
+/* CSS変数 */
+:root {
+
+    /* 丸目サイズ */
+    --radiusSizeNormal:  1.00em;
+    --radiusSizeSmall:   0.75em;
+    --radiusSizeMinimum: 0.25em;
+    --radiusSizeMicro:   0.20em;
+    
+    /* ウィジェットタイトルの隙間 */
+    --widgetTitleSpan : 0.50em;
+    
+    /* コンテンツ内部 左右の隙間 */
+    --contentBoxPadding : 1.5em;
+    
+    /* 各種色設定(通常色) */
+    --comWindowBgColor          : #00BFFF;    /* COMウインドウ背景色                        */
+    --comWindowFrColor          : #4169E1;    /* COMウインドウテキスト色                    */
+    --normalWindowBgColor       : #1E90FF;    /* 通常ウインドウ背景色                       */
+    --normalWindowFrColor       : #00BFFF;    /* 通常ウインドウテキスト色                   */
+    --normalWindowCtColor       : #E0FFFF;    /* 通常ウインドウテキスト色(カテゴリテキスト) */
+    --lockWindowBgColor         : #F5F5F5;    /* ロック画面背景色                           */
+    --lockWindowFrColor         : #4169E1;    /* ロック画面テキスト色                       */
+    --opacity                   : 0.75;       /* 透明度                                     */
+
+    /* 影距離(Box) */
+    --shadowLength : 0.125em;
+    --shadowBlue   : 0.125em;
+    --shadowSpread : 0px;
+
+    /* 影距離(Text) */
+    --shadowTextLength : 1px;
+    --shadowTextBlue   : 1px;
+    
+    /* 各種色設定(影色) */
+    --comWindowBgColorShadow    : #000000;    /* 【影】COMウインドウ背景色                        */
+    --comWindowFrColorShadow    : #000000;    /* 【影】COMウインドウテキスト色                    */
+    --normalWindowBgColorShadow : #000000;    /* 【影】通常ウインドウ背景色                       */
+    --normalWindowFrColorShadow : #000000;    /* 【影】通常ウインドウテキスト色                   */
+    --normalWindowCtColorShadow : #000000;    /* 【影】通常ウインドウテキスト色(カテゴリテキスト) */
+    --lockWindowBgColorShadow   : #000000;    /* 【影】ロック画面背景色                           */
+    --lockWindowFrColorShadow   : #000000;    /* 【影】ロック画面テキスト色                       */
+    
+    /*  WidgetタイトルのテキストについているBoxのサイズ */
+    --widgetTitleBoxSize : 0.5em;
+}
+
+/* 非公式ルーン */
+.unofficial_rune {
+    display:none;
+}
+
+/* ヘッダ */
+.header {
+    position: absolute;
+    z-index: 100;
+    width: 100%;
+    background-color: rgba(128, 128, 128, 0.5);
+}
+
+/* ウインドウのFlexレイアウト適用 */
+.windowFlex {
+    width:  100%;
+    height: 100%;
+    display: flex;
+    
+    opacity: var(--opacity);
+}
+
+.grid-stack-item-content {
+    padding : 0.5em;
+}
+
+/* ウインドウ共通レイアウト */
+.window {
+    height: 100%;
+}
+
+/* ウインドウ共通レイアウト(右向き) */
+.windowRight {
+    border-top-left-radius:     var(--radiusSizeNormal);
+    border-bottom-right-radius: var(--radiusSizeNormal);
+}
+
+/* ウインドウ共通レイアウト(左向き) */
+.windowLeft {
+    border-top-right-radius:   var(--radiusSizeNormal);
+    border-bottom-left-radius: var(--radiusSizeNormal);
+    justify-content: right;
+}
+
+/* COMウインドウ用設定 */
+.comWindow {
+    background-color: var(--comWindowBgColor);
+    box-shadow: var(--shadowLength)
+                var(--shadowLength)
+                var(--shadowBlue)
+                var(--shadowSpread)
+                var(--comWindowBgColorShadow);
+
+    flex-grow:   0;
+    flex-shrink: 0;
+    
+    /* 内部の文字列を中央に持ってくるための設定 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* COMウインドウ用設定(右向き) */
+.comWindowRight {
+    border-bottom-left-radius: var(--radiusSizeNormal);
+
+    margin-right: 1em;
+}
+
+/* COMウインドウ用設定(左向き) */
+.comWindowLeft {
+    border-bottom-right-radius: var(--radiusSizeNormal);
+
+    margin-left: 1em;
+}
+
+.comWindowConnector {
+    
+}
+
+/* COMウインドウ非表示時の隙間の役割をもつDiv用のクラス */
+.comDummySpan {
+    width : 0.5em;
+}
+
+/* COMウインドウ内部の文字列 */
+.comText {
+    text-align: right;
+}
+.comTextLarge {
+    font-size: 1.00em;
+    color:     var(--comWindowFrColor);
+    text-shadow: var(--comWindowFrColorShadow)
+                 var(--shadowTextLength)
+                 var(--shadowTextLength)
+                 var(--shadowTextBlue);
+}
+.comTextMini {
+    display: block;
+    font-size: 0.50em;
+    color:     var(--comWindowFrColor);
+    text-shadow: var(--comWindowFrColorShadow)
+                 var(--shadowTextLength)
+                 var(--shadowTextLength)
+                 var(--shadowTextBlue);
+}
+
+/* 通常ウインドウ用設定 */
+.normalWindow {
+    background-color: var(--normalWindowBgColor);
+    box-shadow: var(--shadowLength)
+                var(--shadowLength)
+                var(--shadowBlue)
+                var(--shadowSpread)
+                var(--normalWindowBgColorShadow);
+
+    flex-grow:   1;
+    flex-shrink: 1;
+    
+    /* 鍵マーク用にrelative設定 */
+    position: relative;
+    
+    display: flex;
+}
+
+/* 通常ウインドウ用設定(右向き) */
+.normalWindowRigth {
+    margin-right : var(--widgetTitleBoxSize);
+}
+
+/* 通常ウインドウ用設定(左向き) */
+.normalWindowLeft {
+    margin-left : var(--widgetTitleBoxSize);
+}
+
+/* Widgetタイトル */
+.widgetTitle {
+    color : var(--normalWindowCtColor);
+    text-shadow: var(--normalWindowCtColorShadow)
+                 var(--shadowTextLength)
+                 var(--shadowTextLength)
+                 var(--shadowTextBlue);
+
+    position: absolute;
+    top:   -0.60em;
+}
+
+/* Widgetタイトル(右向き) */
+.widgetTitleRight {
+    right: var(--widgetTitleSpan);
+}
+
+/* Widgetタイトル(左向き) */
+.widgetTitleLeft {
+    left: var(--widgetTitleSpan);
+}
+
+/* Widgetタイトルのテキスト部 */
+.widgetTitleText {
+    font-size: 0.25em;
+}
+
+/* WidgetタイトルのテキストについているBox */
+.widgetTitleBox {
+    background-color: white;
+    width:  var(--widgetTitleBoxSize);
+    height: var(--widgetTitleBoxSize);
+    display: inline-block;
+
+    border-top-left-radius:     var(--radiusSizeMicro);
+    border-top-right-radius:    var(--radiusSizeMicro);
+    border-bottom-right-radius: var(--radiusSizeMicro);
+}
+
+/* WidgetタイトルのテキストについているBox(右向き) */
+.widgetTitleBoxRight {
+    margin-left:0.25em;
+}
+
+/* WidgetタイトルのテキストについているBox(左向き) */
+.widgetTitleBoxLeft {
+    margin-right:0.25em;
+}
+
+/* コンテンツ部 */
+.contentBox {
+    display: inline-block;
+}
+
+/* コンテンツ部(右向き) */
+.contentBoxRight {
+    padding-left: var(--contentBoxPadding);
+}
+
+/* コンテンツ部(左向き) */
+.contentBoxLeft {
+    padding-right: var(--contentBoxPadding);
+}
+
+/* コンテンツ - タイトル */
+.contentTitle {
+    font-size: 0.75em;
+    padding-top:   0.50em;
+    padding-left:  0.25em;
+    padding-right: 0.25em;
+}
+
+/* コンテンツ - タイトル(右向き) */
+.contentTitleRight {
+    text-align:left;
+}
+
+/* コンテンツ - タイトル(左向き) */
+.contentTitleLeft {
+    text-align:right;
+}
+/* コンテンツ - タイトルバー */
+.contentTitleBar {
+    background-color: var(--normalWindowCtColor);
+    box-shadow: var(--shadowLength)
+                var(--shadowLength)
+                var(--shadowBlue)
+                var(--shadowSpread)
+                var(--normalWindowCtColorShadow);
+    
+    width:  1.5em;
+    height: 1.00em;
+    display: inline-block;
+    
+    text-shadow: 1px 1px;
+}
+
+/* コンテンツ - タイトルバー(右向き) */
+.contentTitleBarRight {
+    margin-right:0.25em;
+
+    border-top-left-radius:     var(--radiusSizeMinimum);
+    border-bottom-left-radius:  var(--radiusSizeMinimum);
+    border-bottom-right-radius: var(--radiusSizeMinimum);
+}
+
+/* コンテンツ - タイトルバー(左向き) */
+.contentTitleBarLeft {
+    margin-left:0.25em;
+
+    border-top-right-radius:    var(--radiusSizeMinimum);
+    border-bottom-right-radius: var(--radiusSizeMinimum);
+    border-bottom-left-radius:  var(--radiusSizeMinimum);
+}
+
+/* コンテンツタイトルテキスト */
+.contentTitleText {
+    color: var(--normalWindowCtColor);
+    text-shadow: var(--normalWindowCtColorShadow)
+                 var(--shadowTextLength)
+                 var(--shadowTextLength)
+                 var(--shadowTextBlue);
+}
+
+/* コンテンツ - テキスト */
+.contentText {
+    display:         flex;
+    justify-content: center;
+    align-content:   center;
+}
+
+/* コンテンツ - テキストのフォント回り設定 */
+.contentTextFont {
+    color: var(--normalWindowFrColor);
+    text-shadow: var(--normalWindowFrColorShadow)
+                 var(--shadowTextLength)
+                 var(--shadowTextLength)
+                 var(--shadowTextBlue);
+}
+
+/* コンテンツ - ルーン */
+.contentRune {
+    height:    100%;
+    font-size: 1.5em;
+}
+
+/* コンテンツ - ルーン */
+.runeBox {
+    height:          100%;
+    display:         flex;
+    align-items:     center;
+    align-content:   center;
+    justify-content: center;
+    padding-bottom:  1em;
+}
+
+/* コンテンツ - ルーン(左向き) */
+.runeBoxRight {
+    padding-right: var(--contentBoxPadding);
+}
+
+/* コンテンツ - ルーン(左向き) */
+.runeBoxLeft {
+    padding-left: var(--contentBoxPadding);
+}
+
+/* ルーンを収めるBox */
+.runeBoundBox {
+    text-align: center;
+    display:    flex;
+    width:      100%;
+    height:     100%;
+    padding-bottom: 1em;
+}
+
+/* ルーンの横のかっこ */
+.runeChevron {
+    font-size: 200%;
+    display: inline-block;
+    flex-grow:   1;
+    flex-shrink: 1;
+    padding-bottom: 1em;
+}
+
+/* ×ボタンなどパネル類 */
+.settingPanel {
+    position: absolute;
+    right: 0.5em;
+}
+
+/* 鍵マーク */
+.lockMark {
+    background-color: var(--lockWindowBgColor);
+    box-shadow: var(--shadowLength)
+                var(--shadowLength)
+                var(--shadowBlue)
+                var(--shadowSpread)
+                var(--lockWindowBgColorShadow);
+
+    position: absolute;
+    
+    width: 2em;
+    height:2em;
+    
+    /* 鍵マークの位置設定 */
+    display:         flex;
+    justify-content: center;
+    align-items:     center;
+}
+
+/* 鍵マーク(右向き) */
+.lockMarkRight {
+    left:   -0.75em;
+    bottom: -0.25em;
+
+    border-top-left-radius:     var(--radiusSizeSmall);
+    border-top-right-radius:    var(--radiusSizeSmall);
+    border-bottom-right-radius: var(--radiusSizeSmall);
+}
+
+/* 鍵マーク(左向き) */
+.lockMarkLeft {
+    right:  -0.75em;
+    bottom: -0.25em;
+
+    border-top-left-radius:    var(--radiusSizeSmall);
+    border-top-right-radius:   var(--radiusSizeSmall);
+    border-bottom-left-radius: var(--radiusSizeSmall);
+}
+
+/* 鍵マーク本体 */
+.lock {
+    color:   var(--lockWindowFrColor);
+    text-shadow: var(--lockWindowFrColorShadow)
+                 var(--shadowTextLength)
+                 var(--shadowTextLength)
+                 var(--shadowTextBlue);
+    display: block;
+}
+
+/* コンテンツ追加行 */
+.addContentRow {
+    text-align: center;
+}
+
+/* コンテンツ追加ボタン */
+.addContentBtn {
+    font-size: 2em;
+}
+
+/* 背景画像 */
+.backgroudImage {
+    position: absolute;
+
+    width:  100%;
+    height: 100%;
+    
+    /* 暫定処置 */
+    object-fit: cover;
+}
+
+/* パネル用ボタンCSS */
+.mybtn {
+    padding: 4px;
+    font-size: larger;
+}
+
+/* 隠し項目 */
+.hidden {
+    display: none;
+}
+
+/* ルーン用画像 */
+.runeSVG {
+    width:  0px;
+    height: 0px;
+    
+    filter: drop-shadow(var(--shadowTextLength) 
+                        var(--shadowTextLength) 
+                        var(--shadowTextBlue) 
+                        var(--normalWindowFrColorShadow));
+}

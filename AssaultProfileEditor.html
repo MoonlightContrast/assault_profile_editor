@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8" />
+        
+        <!-- Bootstrap -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" 
+                integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" 
+                crossorigin="anonymous">
+        </script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" 
+              rel="stylesheet" 
+              integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" 
+              crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+        
+        <!-- Gridstack.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/5.0.0/gridstack-h5.min.js"
+                integrity="sha512-LfvnPzPyY1n+xsUV87eJB5u7EnDda5CI0FrKMLUV2szh1i6HS7/zy626sC0HDPh9HoEG5FtW/tg9TDWzeD4dhw==" 
+                crossorigin="anonymous" 
+                referrerpolicy="no-referrer"></script>
+        <link rel="stylesheet" 
+              href="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/5.0.0/gridstack.min.css" 
+              integrity="sha512-fUN9aO64eYDb4vrlQrSuhabckaNlFo/+34YxvRZ4+l9mk8NZHsWVw1nIWLM++oN/1U5rY+Q+1bWFeLT+dA9YPQ==" 
+              crossorigin="anonymous" 
+              referrerpolicy="no-referrer" />
+        
+        <!-- vue.js 3.x -->
+        <script src="https://unpkg.com/vue@3"></script>
+
+        <!-- Snap.svg -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.5.1/snap.svg-min.js"
+                integrity="sha512-Gk+uNk8NWN235mIkS6B7/424TsDuPDaoAsUekJCKTWLKP6wlaPv+PBGfO7dbvZeibVPGW+mYidz0vL0XaWwz4w==" 
+                crossorigin="anonymous" 
+                referrerpolicy="no-referrer"></script>
+
+        <script src="assaultRuneDrawer.js"></script>
+        <link href="AssaultProfileEditor.css" rel="stylesheet">
+        
+        <title>Assault Profile Editor</title>
+    </head>
+    
+    <body>
+        <div id="body">
+    
+            <!-- ヘッダ -->
+            <header class="header"
+                    ref="headerEle"
+                    v-bind:style="headerVisible ? {} : {visibility: 'hidden'}">
+                         
+                <div class="container">
+                    <div class="row mt-3 mb-3">
+                        
+                        <!-- ウィジェット追加周り -->
+                        <div class="col-2">
+                            <button  v-on:click="addWidget"
+                                     class="btn btn-primary">
+                                Add widget
+                            </button>
+                        </div>
+                        
+                        <!-- 背景画像周り -->
+                        <div class="col-2">
+                            <button  v-on:click="selectImage" 
+                                     class="btn btn-primary">
+                                Load image
+                            </button>
+                            <input type="file" 
+                                   class="hidden"
+                                   ref="fileLoad"
+                                   accept="image/png, image/jpeg"
+                                   v-on:change="loadImage">
+                        </div>
+                        
+                        <!-- 色設定 -->
+                        <div class="col-2">
+                            <button  class="btn btn-primary" 
+                                     data-bs-toggle="modal" 
+                                     data-bs-target="#colorSetting"
+                                     v-on:click="showColorSetting">
+                                Color setting
+                            </button>
+                        </div>
+                        
+                        <!-- 保存ボタン -->
+                        <div class="col-2">
+                            <button class="btn btn-primary"
+                                    v-on:click="saveProfile">
+                                Save profile
+                            </button>
+                        </div>
+                        
+                        <!-- 読込ボタン -->
+                        <div class="col-2">
+                            <button  class="btn btn-primary"
+                                    v-on:click="loadProfileOnclick">
+                                Load profile
+                            </button>
+                        </div>
+
+                        <div class="col-2">
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <img class="backgroudImage" v-bind:src="compBackgroudImg">
+
+            <!-- Gridstack.js領域 -->
+            <div class="grid-stack" ref="gridStackPanel">
+            
+                <!-- ガジェットテ
+                ンプレート -->
+                <template v-for="(item, index) in items" :key="item.dynamicId">
+                
+                    <!-- ガジェット1つ分 -->
+                    <div v-bind:id="item.dynamicId" 
+                         class="grid-stack-item" 
+                         v-on:mouseenter="windowMouseEnter" 
+                         v-on:mouseleave="windowMouseLeave">
+                         
+                        <div class="grid-stack-item-content" style="overflow: hidden;">
+                            <div class="windowFlex">
+                            
+                                <!-- COMウインドウ(右向き) -->
+                                <div style="display:flex;"
+                                     v-bind:style="item.comUpper ? {} : { 'align-items' : 'flex-end' }">
+                                    <div style="display:flex;">
+                                        <div class="window windowRight comWindow comWindowRight"
+                                             v-show="item.comVisible && item.isRight"
+                                             ref="comElementsLeft">
+                                             
+                                            <div class="comText">
+                                                <span class="comTextLarge">{{item.comText}}</span><br>
+                                                <span class="comTextMini" >COM</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="comDummySpan" v-show="!item.comVisible && item.isRight">
+                                </div>
+                                
+                                <!-- 通常ウインドウ -->
+                                <div class="window normalWindow"
+                                     v-show="item.contentsVisible"
+                                     v-bind:class="(item.isRight ? 'windowRight normalWindowRigth' : 'windowLeft normalWindowLeft')">
+                                     
+                                     <template v-for="content in item.contents">
+                                        <div class="contentBox"
+                                             v-show="item.widgetType == 'normal'"
+                                             v-bind:class="(item.isRight ? 'contentBoxRight' : 'contentBoxLeft')">
+                                        
+                                            <!-- カテゴリ -->
+                                            <div class="contentTitle"
+                                                v-bind:class="(item.isRight ? 'contentTitleRight' : 'contentTitleLeft')">
+                                     
+                                                <div class="contentTitleBar contentTitleBarRight"
+                                                     v-show="item.isRight">
+                                                </div>
+                                                <span class="contentTitleText">{{content.title}}</span>
+                                                <div class="contentTitleBar contentTitleBarLeft"
+                                                     v-show="!item.isRight">
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- テキスト -->
+                                            <div class="contentText">
+                                                <span class="contentTextFont">{{content.text}}</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <div class="" 
+                                         v-show="item.widgetType == 'rune'"
+                                         v-bind:class="(item.isRight ? 'contentBoxRight' : 'contentBoxLeft')"
+                                         style="width:100%">
+                                    
+                                        <!-- カテゴリ -->
+                                        <div class="contentTitle"
+                                             v-bind:class="(item.isRight ? 'contentTitleRight' : 'contentTitleLeft')">
+                                            <div class="contentTitleBar contentTitleBarRight"
+                                                 v-show="item.isRight">
+                                            </div>
+                                            <span class="contentTitleText">Rune</span>
+                                            <div class="contentTitleBar contentTitleBarLeft"
+                                                 v-show="!item.isRight">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- テキスト -->
+                                        <div class="runeBox"
+                                             v-bind:class="(item.isRight ? 'runeBoxRight' : 'runeBoxLeft')">
+                                            <span class="bi bi-chevron-compact-left  runeChevron"></span>
+                                            <div class="runeBoundBox">
+                                                <svg ref="runeSVG" class="runeSVG"></svg>
+                                            </div>
+                                            <span class="bi bi-chevron-compact-right runeChevron" style="text-align:right;"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 鍵マーク -->
+                                    <div class="window lockMark" 
+                                         v-bind:class="(item.isRight ? 'windowRight lockMarkRight' : 'windowLeft lockMarkLeft')"
+                                         v-show="item.lockMarkVisible">
+                                        <span class="lock bi bi-lock-fill"></span>
+                                    </div>
+                                </div>
+                            
+                                <!-- COMウインドウ(左向き) -->
+                                <div class="comDummySpan" v-show="!item.comVisible && !item.isRight">
+                                </div>
+                                <div style="display:flex;"
+                                     v-bind:style="item.comUpper ? {} : { 'align-items' : 'flex-end' }">
+                                    <div style="display:flex;">
+                                        <div class="window windowLeft comWindow comWindowLeft"
+                                             v-show="item.comVisible && !item.isRight"
+                                             ref="comElementsRight">
+                                             
+                                            <div class="comText">
+                                                <span class="comTextLarge">{{item.comText}}</span><br>
+                                                <span class="comTextMini" >COM</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- ×ボタンなどパネル類 -->
+                                <div class="settingPanel" v-show="item.closeVisible">
+                                    <button type="button" 
+                                            class="mybtn btn bi bi-gear" 
+                                            aria-label="Setting"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#widgetSetting"
+                                            v-on:click="editWidget(item)">
+                                    </button>
+                                    <button type="button" 
+                                            class="mybtn btn bi bi-x-lg" 
+                                            aria-label="Close" 
+                                            v-on:click="windowCloseButtonClick($event, item)">
+                                    </button>
+                                </div>
+                                
+                                <!-- ウィジェットタイトル -->
+                                <div class="widgetTitle"
+                                     v-bind:class="(item.isRight ? 'widgetTitleRight' : 'widgetTitleLeft')"
+                                     v-show="item.visibleWindowTitle">
+                                    <div  class="widgetTitleBox widgetTitleBoxLeft" v-show="!item.isRight"></div>
+                                    <span class="widgetTitleText">{{item.windowTitle}}</span>
+                                    <div  class="widgetTitleBox widgetTitleBoxRight" v-show=" item.isRight"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        
+            <!-- 色設定モーダル -->
+            <div class="modal fade"
+                 id="colorSetting" 
+                 tabindex="-1" 
+                 aria-labelledby="colorSettingModalLabel" 
+                 aria-hidden="true">
+            
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        
+                        <!-- モーダルヘッダ -->
+                        <div class="modal-header">
+                            <h5 class="modal-title">Color setting</h5>
+                            
+                            <!-- 閉じるボタン -->
+                            <button type="button" 
+                                    class="btn-close" 
+                                    data-bs-dismiss="modal" 
+                                    aria-label="Close">
+                            </button>
+                        </div>
+                        
+                        <!-- モーダルコンテンツ -->
+                        <div class="modal-body">
+                        
+                            <!-- COMウインドウ背景色 -->
+                            <div class="row">
+                                <label for="comWindowBgColor" 
+                                       class="col-7 col-form-label col-form-label-sm">
+                                    COM Window background color
+                                </label>
+                                <input type="color"
+                                       id="comWindowBgColor"
+                                       ref="comWindowBgColor"
+                                       class="form-control form-control-color" 
+                                       aria-label="COM Window background color" 
+                                       aria-describedby="inputGroup-sizing-sm"
+                                       v-model="colorSettingWork.comWindowBgColor">
+                            </div>
+                        
+                            <!-- COMウインドウテキスト色 -->
+                            <div class="row">
+                                <label for="comWindowFrColor" 
+                                       class="col-7 col-form-label col-form-label-sm">
+                                    COM Window foreground color
+                                </label>
+                                <input type="color" 
+                                       id ="comWindowFrColor"
+                                       ref="comWindowFrColor"
+                                       class="form-control form-control-color" 
+                                       aria-label="COM Window foreground color" 
+                                       aria-describedby="inputGroup-sizing-sm"
+                                       v-model="colorSettingWork.comWindowFrColor">
+                            </div>
+                        
+                            <!-- 通常ウインドウ背景色 -->
+                            <div class="row">
+                                <label for="normalWindowBgColor" 
+                                       class="col-7 col-form-label col-form-label-sm">
+                                    Normal window background color
+                                </label>
+                                <input type="color" 
+                                       id ="normalWindowBgColor"
+                                       ref="normalWindowBgColor"
+                                       class="form-control form-control-color" 
+                                       aria-label="Normal window background color" 
+                                       aria-describedby="inputGroup-sizing-sm"
+                                       v-model="colorSettingWork.normalWindowBgColor">
+                            </div>
+                        
+                            <!-- 通常ウインドウテキスト色 -->
+                            <div class="row">
+                                <label for="normalWindowFrColor" 
+                                       class="col-7 col-form-label col-form-label-sm">
+                                    Normal window foreground color
+                                </label>
+                                <input type="color" 
+                                       id ="normalWindowFrColor"
+                                       ref="normalWindowFrColor"
+                                       class="form-control form-control-color" 
+                                       aria-label="Normal window foreground color" 
+                                       aria-describedby="inputGroup-sizing-sm"
+                                       v-model="colorSettingWork.normalWindowFrColor">
+                            </div>
+                        
+                            <!-- 通常ウインドウテキスト色(カテゴリテキスト) -->
+                            <div class="row">
+                                <label for="normalWindowCtColor" 
+                                       class="col-7 col-form-label col-form-label-sm">
+                                    Normal window category text color
+                                </label>
+                                <input type="color" 
+                                       id ="normalWindowCtColor"
+                                       ref="normalWindowCtColor"
+                                       class="form-control form-control-color" 
+                                       aria-label="Normal window category text color" 
+                                       aria-describedby="inputGroup-sizing-sm"
+                                       v-model="colorSettingWork.normalWindowCtColor">
+                            </div>
+                        
+                            <!-- ロックウインドウ背景色 -->
+                            <div class="row">
+                                <label for="lockWindowBgColor" 
+                                       class="col-7 col-form-label col-form-label-sm">
+                                    Lock window background color
+                                </label>
+                                <input type="color" 
+                                       id ="lockWindowBgColor"
+                                       ref="lockWindowBgColor"
+                                       class="form-control form-control-color" 
+                                       aria-label="Lock window background color" 
+                                       aria-describedby="inputGroup-sizing-sm"
+                                       v-model="colorSettingWork.lockWindowBgColor">
+                            </div>
+                        
+                            <!-- ロックウインドウテキスト色 -->
+                            <div class="row">
+                                <label for="lockWindowFrColor" 
+                                       class="col-7 col-form-label col-form-label-sm">
+                                    Lock window foreground color
+                                </label>
+                                <input type="color" 
+                                       id ="lockWindowFrColor"
+                                       ref="lockWindowFrColor"
+                                       class="form-control form-control-color" 
+                                       aria-label="Lock window foreground color" 
+                                       aria-describedby="inputGroup-sizing-sm"
+                                       v-model="colorSettingWork.lockWindowFrColor">
+                            </div>
+                            
+                            <!-- ウィジェット透明度 -->
+                            <div class="row">
+                                <label for="opacity" 
+                                       class="col-7 col-form-label col-form-label-sm">
+                                    Widget opacity(<span v-text="compColorSettingWork_Opacity"></span>)
+                                </label>
+                                <input type="range" 
+                                       id ="opacity"
+                                       ref="opacity"
+                                       class="form-control form-range" 
+                                       aria-label="Widget opacity" 
+                                       aria-describedby="inputGroup-sizing-sm"
+                                       v-model="colorSettingWork.opacity"
+                                       min="0"
+                                       max="1"
+                                       step="0.125">
+                            </div>
+                        </div>
+                        
+                        <!-- モーダルフッタ -->
+                        <div class="modal-footer">
+                        
+                            <!-- キャンセルボタン -->
+                            <button type="button" 
+                                    class="btn btn-secondary" 
+                                    data-bs-dismiss="modal">
+                                Close
+                            </button>
+                            
+                            <!-- 反映ボタン -->
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    data-bs-dismiss="modal"
+                                    v-on:click="applyColor()">
+                                Save changes
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ガジェット入力モーダル -->
+            <div class="modal fade"
+                 id="widgetSetting" 
+                 tabindex="-1" 
+                 aria-labelledby="widgetSettingModalLabel" 
+                 aria-hidden="true">
+            
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        
+                        <!-- モーダルヘッダ -->
+                        <div class="modal-header">
+                            <h5 class="modal-title">Widget setting</h5>
+                            
+                            <!-- 閉じるボタン -->
+                            <button type="button" 
+                                    class="btn-close" 
+                                    data-bs-dismiss="modal" 
+                                    aria-label="Close">
+                            </button>
+                        </div>
+                        
+                        <!-- モーダルコンテンツ -->
+                        <div class="modal-body">
+                            
+                            <!-- 右向き／左向き -->
+                            <div class="row">
+                                <div class="col-12 form-check form-switch">
+                                    <input type="checkbox"
+                                           id="isRight"
+                                           class="form-control form-check-input" 
+                                           aria-label="Left/Right" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="editItemWork.isRight">
+                                    <label for="isRight" 
+                                           class="col-4 col-form-label col-form-label-sm form-check-label">
+                                        Left/Right
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- COM表示／非表示 -->
+                            <div class="row">
+                                <div class="col-12 form-check form-switch">
+                                    <input type="checkbox"
+                                           id="comVisible"
+                                           class="form-control form-check-input" 
+                                           aria-label="COM Visible" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="editItemWork.comVisible">
+                                    <label for="comVisible" 
+                                           class="col-4 col-form-label col-form-label-sm form-check-label">
+                                        COM Visible
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- COM表示上側 -->
+                            <div class="row">
+                                <div class="col-12 form-check form-switch">
+                                    <input type="checkbox"
+                                           id="comUpper"
+                                           class="form-control form-check-input" 
+                                           aria-label="COM Upper" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="editItemWork.comUpper">
+                                    <label for="comUpper" 
+                                           class="col-4 col-form-label col-form-label-sm form-check-label">
+                                        COM Upper
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- コンテンツ表示／非表示 -->
+                            <div class="row">
+                                <div class="col-12 form-check form-switch">
+                                    <input type="checkbox"
+                                           id="contentsVisible"
+                                           class="form-control form-check-input" 
+                                           aria-label="Contents visible" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="editItemWork.contentsVisible">
+                                    <label for="contentsVisible" 
+                                           class="col-4 col-form-label col-form-label-sm form-check-label">
+                                        Contents visible
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- 鍵マーク表示／非表示 -->
+                            <div class="row">
+                                <div class="col-12 form-check form-switch">
+                                    <input type="checkbox"
+                                           id="lockMarkVisible"
+                                           class="form-control form-check-input" 
+                                           aria-label="Lock visible" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="editItemWork.lockMarkVisible">
+                                    <label for="lockMarkVisible" 
+                                           class="col-4 col-form-label col-form-label-sm form-check-label">
+                                        Lock visible
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- COMテキスト -->
+                            <div class="row">
+                                <label for="comText" 
+                                       class="col-4 col-form-label col-form-label-sm">
+                                    COM Text
+                                </label>
+                                <div class="col-8">
+                                    <input type="text"
+                                           id="comText"
+                                           class="form-control" 
+                                           aria-label="COM Text" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="editItemWork.comText">
+                                </div>
+                            </div>
+                            
+                            <!-- ウインドウタイトル -->
+                            <div class="row">
+                                <label for="windowTitle" 
+                                       class="col-4 col-form-label col-form-label-sm">
+                                    Window title
+                                </label>
+                                <div class="col-8">
+                                    <input type="text"
+                                           id="windowTitle"
+                                           class="form-control" 
+                                           aria-label="Window text" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="editItemWork.windowTitle">
+                                </div>
+                            </div>
+                            
+                            <!-- ウィジェットタイプ -->
+                            <div class="row">
+                                <label for="widgetType" 
+                                       class="col-4 col-form-label col-form-label-sm">
+                                    Widget type
+                                </label>
+                                <div class="col-8">
+                                    <select id="widgetType"
+                                            class="form-select" 
+                                            aria-label="Widget type" 
+                                            aria-describedby="inputGroup-sizing-sm"
+                                            v-model="editItemWork.widgetType">
+                                        <option value="normal">Normal</option>
+                                        <option value="rune"  >Rune  </option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- コンテンツ(通常) -->
+                            <hr>
+                            <template v-for="(content, index) in editItemWork.contents">
+                                <div class="row" v-show="editItemWork.widgetType == 'normal'">
+                                    <div class="col-12">
+                                        Content.{{index + 1}}
+                                    </div>
+                                </div>
+                                <div class="row mb-3" 
+                                     v-show="editItemWork.widgetType == 'normal'">
+                                    <div class="col-5">
+                                        <div class="input-group">
+                                            <span  class="input-group-text">title</span >
+                                            <input type="text"
+                                                   id="contentTitle"
+                                                   class="form-control" 
+                                                   aria-label="Content text" 
+                                                   aria-describedby="inputGroup-sizing-sm"
+                                                   v-model="content.title">
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="input-group">
+                                            <label class="input-group-text">text</label>
+                                            <input type="text"
+                                                   id="contentText"
+                                                   class="form-control" 
+                                                   aria-label="Content text" 
+                                                   aria-describedby="inputGroup-sizing-sm"
+                                                   v-model="content.text">
+                                        </div>
+                                    </div>
+                                    <div class="col-1">
+                                        <button type="button" 
+                                                class="mybtn btn bi bi-trash" 
+                                                aria-label="Delete content"
+                                                v-on:click="delContent(editItemWork.contents, index)"></button>
+                                    </div>
+                                </div>
+                            </template>
+                            <div class="row" 
+                                 v-show="editItemWork.contents.length < 3 && editItemWork.widgetType == 'normal'">
+                                <div class="col-12 addContentRow">
+                                    <button type="button" 
+                                            class="addContentBtn mybtn btn bi bi-plus-circle" 
+                                            aria-label="Add content"
+                                            v-on:click="addContent"></button>
+                                </div>
+                            </div>
+
+                            <!-- コンテンツ(ルーン) -->
+                            <div class="row"
+                                 v-show="editItemWork.widgetType == 'rune'">
+                                <label for="runeA" 
+                                       class="col-2 col-form-label col-form-label-sm">
+                                    Rune.1
+                                </label>
+                                <div class="col-7">
+                                    <select id="runeA"
+                                            class="form-select" 
+                                            aria-label="Rune.1" 
+                                            aria-describedby="inputGroup-sizing-sm"
+                                            v-model="editItemWork.runeA">
+                                        <option value="A0"                               >ᚠ:FEOH</option>
+                                        <option value="A2"                               >ᚢ:UR</option>
+                                        <option value="A3"   v-show="showUnofficialRune" >ᚣ:YR&lt;Unofficial&gt;</option>
+                                        <option value="A6"                               >ᚦ:THORN</option>
+                                        <option value="A8"                               >ᚨ:ANSUZ</option>
+                                        <option value="A9"                               >ᚩ:OS</option>
+                                        <option value="AA"   v-show="showUnofficialRune" >ᚪ:AC&lt;Unofficial&gt;</option>
+                                        <option value="B1"                               >ᚱ:REID</option>
+                                        <option value="B2"   v-show="showUnofficialRune" >ᚲ:KAUNA&lt;Unofficial&gt;</option>
+                                        <option value="B3"                               >ᚳ:CEN</option>
+                                        <option value="B3_2"                             >ᚳ:CEN2</option>
+                                        <option value="B7"                               >ᚷ:GYFU</option>
+                                        <option value="B8"   v-show="showUnofficialRune" >ᚸ:GAR&lt;Unofficial&gt;</option>
+                                        <option value="B9"                               >ᚹ:WYNN</option>
+                                        <option value="BB"                               >ᚻ:HAEGL</option>
+                                        <option value="BB_2"                             >ᚻ:HAEGL2</option>
+                                        <option value="BE"                               >ᚾ:NAUD</option>
+                                        <option value="C1"                               >ᛁ:ISS</option>
+                                        <option value="C4"                               >ᛄ:GER</option>
+                                        <option value="C7"   v-show="showUnofficialRune" >ᛇ:YL&lt;Unofficial&gt;</option>
+                                        <option value="C8"                               >ᛈ:PEORTH</option>
+                                        <option value="C9"                               >ᛉ:EOLHX</option>
+                                        <option value="CB"                               >ᛋ:SIGEL</option>
+                                        <option value="CB_2"                             >ᛋ:SIGEL2</option>
+                                        <option value="CF"                               >ᛏ:TYR</option>
+                                        <option value="D2"                               >ᛒ:BEORC</option>
+                                        <option value="D6"                               >ᛖ:EH</option>
+                                        <option value="D7"                               >ᛗ:MAN</option>
+                                        <option value="DA"                               >ᛚ:LOGR</option>
+                                        <option value="DD"                               >ᛝ:ING</option>
+                                        <option value="DE"                               >ᛞ:DAEG</option>
+                                        <option value="DF"                               >ᛟ:ETHEL</option>
+                                        <option value="E0"   v-show="showUnofficialRune" >ᛠ:EAR&lt;Unofficial&gt;</option>
+                                        <option value="E1"   v-show="showUnofficialRune" >ᛡ:IOR&lt;Unofficial&gt;</option>
+                                        <option value="E2"   v-show="showUnofficialRune" >ᛢ:CWEORTH&lt;Unofficial&gt;</option>
+                                        <option value="E3"   v-show="showUnofficialRune" >ᛣ:CALC&lt;Unofficial&gt;</option>
+                                        <option value="E4"   v-show="showUnofficialRune" >ᛤ:CEALC&lt;Unofficial&gt;</option>
+                                        <option value="E5"   v-show="showUnofficialRune" >ᛥ:STAN&lt;Unofficial&gt;</option>
+                                        <option value="E5_2" v-show="showUnofficialRune" >ᛥ:STAN2&lt;Unofficial&gt;</option>
+                                    </select>
+                                </div>
+                                <div class="col-3 form-check form-switch">
+                                    <input type="checkbox"
+                                           id="runeAmirror"
+                                           class="form-control form-check-input" 
+                                           aria-label="Mirror" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="editItemWork.runeAmirror">
+                                    <label for="runeAmirror" 
+                                           class="col-form-label col-form-label-sm form-check-label">
+                                        Mirror
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="row"
+                                 v-show="editItemWork.widgetType == 'rune'">
+                                <label for="runeB" 
+                                       class="col-2 col-form-label col-form-label-sm">
+                                    Rune.2
+                                </label>
+                                <div class="col-7">
+                                    <select id="runeB"
+                                            class="form-select" 
+                                            aria-label="Rune.2" 
+                                            aria-describedby="inputGroup-sizing-sm"
+                                            v-model="editItemWork.runeB">
+                                        <option value="A0"                               >ᚠ:FEOH</option>
+                                        <option value="A2"                               >ᚢ:UR</option>
+                                        <option value="A3"   v-show="showUnofficialRune" >ᚣ:YR&lt;Unofficial&gt;</option>
+                                        <option value="A6"                               >ᚦ:THORN</option>
+                                        <option value="A8"                               >ᚨ:ANSUZ</option>
+                                        <option value="A9"                               >ᚩ:OS</option>
+                                        <option value="AA"   v-show="showUnofficialRune" >ᚪ:AC&lt;Unofficial&gt;</option>
+                                        <option value="B1"                               >ᚱ:REID</option>
+                                        <option value="B2"   v-show="showUnofficialRune" >ᚲ:KAUNA&lt;Unofficial&gt;</option>
+                                        <option value="B3"                               >ᚳ:CEN</option>
+                                        <option value="B3_2"                             >ᚳ:CEN2</option>
+                                        <option value="B7"                               >ᚷ:GYFU</option>
+                                        <option value="B8"   v-show="showUnofficialRune" >ᚸ:GAR&lt;Unofficial&gt;</option>
+                                        <option value="B9"                               >ᚹ:WYNN</option>
+                                        <option value="BB"                               >ᚻ:HAEGL</option>
+                                        <option value="BB_2"                             >ᚻ:HAEGL2</option>
+                                        <option value="BE"                               >ᚾ:NAUD</option>
+                                        <option value="C1"                               >ᛁ:ISS</option>
+                                        <option value="C4"                               >ᛄ:GER</option>
+                                        <option value="C7"   v-show="showUnofficialRune" >ᛇ:YL&lt;Unofficial&gt;</option>
+                                        <option value="C8"                               >ᛈ:PEORTH</option>
+                                        <option value="C9"                               >ᛉ:EOLHX</option>
+                                        <option value="CB"                               >ᛋ:SIGEL</option>
+                                        <option value="CB_2"                             >ᛋ:SIGEL2</option>
+                                        <option value="CF"                               >ᛏ:TYR</option>
+                                        <option value="D2"                               >ᛒ:BEORC</option>
+                                        <option value="D6"                               >ᛖ:EH</option>
+                                        <option value="D7"                               >ᛗ:MAN</option>
+                                        <option value="DA"                               >ᛚ:LOGR</option>
+                                        <option value="DD"                               >ᛝ:ING</option>
+                                        <option value="DE"                               >ᛞ:DAEG</option>
+                                        <option value="DF"                               >ᛟ:ETHEL</option>
+                                        <option value="E0"   v-show="showUnofficialRune" >ᛠ:EAR&lt;Unofficial&gt;</option>
+                                        <option value="E1"   v-show="showUnofficialRune" >ᛡ:IOR&lt;Unofficial&gt;</option>
+                                        <option value="E2"   v-show="showUnofficialRune" >ᛢ:CWEORTH&lt;Unofficial&gt;</option>
+                                        <option value="E3"   v-show="showUnofficialRune" >ᛣ:CALC&lt;Unofficial&gt;</option>
+                                        <option value="E4"   v-show="showUnofficialRune" >ᛤ:CEALC&lt;Unofficial&gt;</option>
+                                        <option value="E5"   v-show="showUnofficialRune" >ᛥ:STAN&lt;Unofficial&gt;</option>
+                                        <option value="E5_2" v-show="showUnofficialRune" >ᛥ:STAN2&lt;Unofficial&gt;</option>
+                                    </select>
+                                </div>
+                                <div class="col-3 form-check form-switch">
+                                    <input type="checkbox"
+                                           id="runeBmirror"
+                                           class="form-control form-check-input" 
+                                           aria-label="Mirror" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="editItemWork.runeBmirror">
+                                    <label for="runeBmirror" 
+                                           class="col-form-label col-form-label-sm form-check-label">
+                                        Mirror
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- 非公式ルーンの表示切り替え -->
+                            <div class="row"
+                                 v-show="editItemWork.widgetType == 'rune'">
+                                <div class="col-12 form-check form-switch">
+                                    <input type="checkbox"
+                                           id="showUnofficialRune"
+                                           class="form-control form-check-input" 
+                                           aria-label="Show unofficial rune" 
+                                           aria-describedby="inputGroup-sizing-sm"
+                                           v-model="showUnofficialRune">
+                                    <label for="showUnofficialRune" 
+                                           class="col-4 col-form-label col-form-label-sm form-check-label">
+                                        Show unofficial rune
+                                    </label>
+                                </div>
+                            </div>
+
+                        </div>
+                        
+                        <!-- モーダルフッタ -->
+                        <div class="modal-footer">
+                        
+                            <!-- キャンセルボタン -->
+                            <button type="button" 
+                                    class="btn btn-secondary" 
+                                    data-bs-dismiss="modal">
+                                Close
+                            </button>
+                            
+                            <!-- 反映ボタン -->
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    data-bs-dismiss="modal"
+                                    v-on:click="applyWidget">
+                                Save changes
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- 隠し項目 -->
+            <div style="display:none;">
+            
+                <!-- プロファイルダウンロード用リンク -->
+                <a ref="downloadLink">
+                
+                <!-- プロファイルアップロード用Upload -->
+                <input type="file" 
+                       class="hidden"
+                       ref="profileLoad"
+                       v-on:change="loadProfileOnchange">
+            </div>
+            
+        </div>
+    </body>
+    <script src="AssaultProfileEditor.js"></script>
+</html>
